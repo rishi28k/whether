@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather App</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    .container {
+      background: rgba(255,255,255,0.2);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      width: 320px;
+      backdrop-filter: blur(10px);
+    }
+    h1 { font-size: 26px; margin-bottom: 15px; }
+    input {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      width: 80%;
+      margin-bottom: 10px;
+      text-align: center;
+      outline: none;
+    }
+    button {
+      background-color: #0078ff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.3s;
+      margin: 5px;
+    }
+    button:hover { background-color: #005ccc; }
+    .weather { margin-top: 20px; }
+    img { width: 80px; }
+    #status { font-size: 14px; margin-top: 10px; color: #ffe; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌤️ Weather App</h1>
+
+    <button onclick="getWeatherByLocation()">📍 Current Location</button>
+    <p>or</p>
+
+    <input type="text" id="cityInput" placeholder="Enter city name">
+    <button onclick="getWeatherByCity()">🔍 Get Weather</button>
+
+    <div id="status"></div>
+    <div id="result" class="weather"></div>
+  </div>
+
+  <script>
+    const apiKey = "c64f6b0d68db48c9889202938250710";
+
+    // 🌍 Weather by current location
+    async function getWeatherByLocation() {
+      const status = document.getElementById("status");
+      const result = document.getElementById("result");
+      result.innerHTML = "";
+      status.textContent = "Getting your location...";
+
+      if (!navigator.geolocation) {
+        status.textContent = "❌ Geolocation not supported by your browser";
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        status.textContent = `📍 Latitude: ${lat.toFixed(2)}, Longitude: ${lon.toFixed(2)}`;
+
+        const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${lat},${lon}&aqi=no`;
+
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("Failed to fetch weather");
+          const data = await res.json();
+          showWeather(data);
+          status.textContent = `Current weather at your location`;
+        } catch (err) {
+          status.textContent = "❌ " + err.message;
+        }
+      }, (err) => {
+        if (err.code === 1) status.textContent = "⚠️ Permission denied. Enter city manually.";
+        else if (err.code === 2) status.textContent = "⚠️ Position unavailable.";
+        else status.textContent = "⚠️ Error getting location.";
+      });
+    }
+
+    // 🌆 Weather by city
+    async function getWeatherByCity() {
+      const cityInput = document.getElementById("cityInput").value.trim();
+      const status = document.getElementById("status");
+      const result = document.getElementById("result");
+      result.innerHTML = "";
+
+      if (!cityInput) {
+        status.textContent = "Please enter a city name.";
+        return;
+      }
+
+      const city = encodeURIComponent(cityInput);
+      status.textContent = `Fetching weather for ${cityInput}...`;
+
+      const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}&aqi=no`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("City not found");
+        const data = await res.json();
+        showWeather(data);
+        status.textContent = `Current weather in ${data.location.name}, ${data.location.country}`;
+      } catch (err) {
+        status.textContent = "❌ " + err.message;
+      }
+    }
+
+    // 🌤️ Display weather info
+    function showWeather(data) {
+      const result = document.getElementById("result");
+      const name = data.location.name + ", " + data.location.country;
+      const temp = data.current.temp_c;
+      const desc = data.current.condition.text;
+      const icon = data.current.condition.icon;
+      const humidity = data.current.humidity;
+      const wind = data.current.wind_kph;
+
+      result.innerHTML = `
+        <h2>${name}</h2>
+        <img src="https:${icon}" alt="${desc}" />
+        <h3>${temp}°C</h3>
+        <p>${desc}</p>
+        <p>💧 Humidity: ${humidity}% | 💨 Wind: ${wind} kph</p>
+      `;
+    }
+  </script>
+</body>
+</html>
