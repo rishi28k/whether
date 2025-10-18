@@ -87,7 +87,7 @@
 
         status.textContent = `📍 Latitude: ${lat.toFixed(2)}, Longitude: ${lon.toFixed(2)}`;
 
-        const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${lat},${lon}&aqi=no`;
+        const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${lat},${lon}&aqi=no`;
 
         try {
           const res = await fetch(url);
@@ -120,7 +120,7 @@
       const city = encodeURIComponent(cityInput);
       status.textContent = `Fetching weather for ${cityInput}...`;
 
-      const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}&aqi=no`;
+      const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}&aqi=no`;
 
       try {
         const res = await fetch(url);
@@ -154,3 +154,4 @@
   </script>
 </body>
 </html>
+
